@@ -2,6 +2,7 @@ import streamlit as st
 from docx import Document
 from fpdf import FPDF
 import tempfile
+import re
 
 TIME_SLOTS = [
     "9.00-9.55", "10.00-10.55", "11.00-11.55", "12.00-12.55",
@@ -20,6 +21,16 @@ def get_group_for_batch(batch_code):
         if batch_code in members:
             return group
     return None
+
+def smart_split_batches(batch_str):
+    #if comma-separated, use that
+    if ',' in batch_str:
+        return [b.strip() for b in batch_str.split(',')]
+    #if contains space, split by space
+    elif ' ' in batch_str:
+        return [b.strip() for b in batch_str.split()]
+    #else, split by capital letter + number pattern (e.g., B7B8 -> [B7,B8])
+    return re.findall(r'[A-Z]\d+', batch_str)
 
 def extract_timetable(docx_file, batch_code):
     doc = Document(docx_file)
@@ -45,7 +56,8 @@ def extract_timetable(docx_file, batch_code):
                     if not line:
                         continue
                     batch_part = line.split('-')[0].strip()
-                    batches = [b.strip() for b in batch_part.split(',')]
+                    batches = smart_split_batches(batch_part)
+
                     if batch_code in batches or (group_code and batch_part == group_code):
                         timetable[day].append((slot, line))
                         added = True
