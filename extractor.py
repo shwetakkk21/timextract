@@ -93,7 +93,6 @@ if uploaded_file and batch_input:
             for slot, entry in entries:
                 st.write(f"{slot}: {entry if entry else 'No class'}")
 
-        if st.button("📥 Download as PDF"):
-            pdf_path = generate_pdf(timetable, batch_input.upper())
-            with open(pdf_path, "rb") as f:
-                st.download_button("Download Timetable PDF", f, file_name="personal_timetable.pdf")
+        pdf_path = generate_pdf(timetable, batch_input.upper())
+        with open(pdf_path, "rb") as f:
+            st.download_button("📥 Download Timetable PDF", f, file_name="personal_timetable.pdf")
