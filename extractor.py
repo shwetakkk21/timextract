@@ -80,8 +80,11 @@ def generate_pdf(timetable, batch_code):
         pdf.set_font("Arial", "B", 12)
         pdf.cell(200, 10, txt=day, ln=True)
         pdf.set_font("Arial", size=12)
-        for slot, entry in timetable[day]:
-            line = f"{slot}: {entry if entry else 'No class'}"
+        for slot, entry in timetable[day]:  
+            if(slot=="1.00-1.55"):
+                line = f"{slot}: Lunch"
+            else:
+                line = f"{slot}: {entry if entry else 'No class'}"
             pdf.cell(200, 8, txt=line, ln=True)
         pdf.ln(5)
     tmp_file = tempfile.NamedTemporaryFile(delete=False, suffix=".pdf")
@@ -101,6 +104,7 @@ with st.sidebar:
     st.markdown("### About")
     st.write("""This application extracts your personalized timetable from college master timetables in .docx format.    
     Built by **Shweta Kumari**, 2025.  
+    If you find any discrepancies or have suggestions, please reach out!  
     [GitHub](https://github.com/shwetakkk21)
     """)
 
