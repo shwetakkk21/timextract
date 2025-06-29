@@ -97,6 +97,13 @@ st.write("Please enter your batch code as B1 or B9 and not BX or BZ.")
 # st.write("A1 batches are requested to enter as 2A1.")
 batch_input = st.text_input("Enter your batch code (e.g., B4, B9, B13)")
 
+with st.sidebar:
+    st.markdown("### About")
+    st.write("""This application extracts your personalized timetable from college master timetables in .docx format.    
+    Built by **Shweta Kumari**, 2025.  
+    [GitHub](https://github.com/shwetakkk21)
+    """)
+
 if uploaded_file and batch_input:
     with st.spinner("Extracting your timetable..."):
         timetable = extract_timetable(uploaded_file, batch_input.upper())
@@ -113,3 +120,20 @@ if uploaded_file and batch_input:
         pdf_path = generate_pdf(timetable, batch_input.upper())
         with open(pdf_path, "rb") as f:
             st.download_button("📥 Download Timetable PDF", f, file_name=f"{batch_input.capitalize()} Timetable.pdf")
+
+st.markdown("""
+<style>
+.footer{
+    width: 100%;
+    color: #888;
+    text-align: center;
+    font-size: small;
+
+    }
+</style>
+<hr>
+<div class="footer">
+© 2025 Timextract. All Rights Reserved.
+By using this application, you agree not to reproduce, distribute, or exploit any part of this service without explicit written permission.
+</div>
+""",unsafe_allow_html=True)
