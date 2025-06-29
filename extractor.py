@@ -92,12 +92,12 @@ def generate_pdf(timetable, batch_code):
     return tmp_file.name
 
 # ---------- Streamlit UI ----------
-st.set_page_config(page_title="Timetable Extractor", layout="centered")
+st.set_page_config(page_title="Timextract", layout="centered")
 st.title("Personalized Timetable Extractor")
 
 uploaded_file = st.file_uploader("Upload your master timetable (.docx)", type="docx")
 st.write("Please enter your batch code as B1 or B9 and not BX or BZ.")
-# st.write("A1 batches are requested to enter as 2A1.")
+# st.write("A1 batch is requested to enter as 2A1.")
 batch_input = st.text_input("Enter your batch code (e.g., B4, B9, B13)")
 
 with st.sidebar:
