@@ -4,22 +4,22 @@ A Python script that extracts and filters timetable entries from .docx files bas
 
 ---
 
-## ✨ Features
+## Features
 
-- 📄 Parses .docx timetable documents
-- 🔍 Filters based on batch codes (e.g., only show entries with b4, include bx exclusively if it starts the entry)
-- 📤 Exports filtered timetable to a formatted PDF
-- 🛠 Simple to customize for your own batch or class group
-
----
-
-## 📸 Demo
-
-
+- Parses .docx timetable documents
+- Filters based on batch codes (e.g., only show entries with b4, include bx exclusively if it starts the entry)
+- Exports filtered timetable to a formatted PDF
+- Simple to customize for your own batch or class group
 
 ---
 
-## 🧰 Tech Stack
+## Demo
+
+
+
+---
+
+## Tech Stack
 
 - Python 3.x
 - [python-docx](https://pypi.org/project/python-docx/)
@@ -27,10 +27,34 @@ A Python script that extracts and filters timetable entries from .docx files bas
 
 ---
 
-## 🚀 Getting Started
+## Getting Started
 
 ### 1. Clone the Repo
 
 ```bash
 git clone https://github.com/your-username/timetable-extractor.git
 cd timetable-extractor
+```
+### 2. Install Dependencies
+
+```bash
+pip install streamlit python-docx fpdf
+```
+### 3. Run the Script
+
+```bash
+streamlit run extractor.py
+```
+
+---
+
+## Customization
+
+- You can change the batch code or logic in the script
+- Update PDF formatting (fonts,layout) inside the FPDF section
+
+---
+
+## Contributing
+
+Pull requests are welcome! If you have any ideas for new features or improvements, feel free to fork this repo and submit a PR.
