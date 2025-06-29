@@ -13,8 +13,10 @@ BATCH_GROUPS = {
     "BX": ["B1", "B2", "B3", "B4"],
     "BY": ["B5", "B6", "B7", "B8"],
     "BZ": ["B9", "B10", "B11", "B12"],
-    "BX1": ["B13", "B14", "2A1"]
+    "BX1": ["B13", "B14", "A1"]
 }
+
+DAYS= ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]
 
 def get_group_for_batch(batch_code):
     for group, members in BATCH_GROUPS.items():
@@ -22,19 +24,19 @@ def get_group_for_batch(batch_code):
             return group
     return None
 
-def smart_split_batches(batch_str):
+def split_batches(batch_str):
     #if comma-separated, use that
     if ',' in batch_str:
         return [b.strip() for b in batch_str.split(',')]
     #if contains space, split by space
     elif ' ' in batch_str:
-        return [b.strip() for b in batch_str.split()]
+        return [b.strip() for b in batch_str.split(' ')]
     #else, split by capital letter + number pattern (e.g., B7B8 -> [B7,B8])
     return re.findall(r'[A-Z]\d+', batch_str)
 
 def extract_timetable(docx_file, batch_code):
     doc = Document(docx_file)
-    timetable = {day: [] for day in ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]}
+    timetable = {day: [] for day in DAYS}
     group_code = get_group_for_batch(batch_code)
 
     for table in doc.tables:
@@ -56,7 +58,7 @@ def extract_timetable(docx_file, batch_code):
                     if not line:
                         continue
                     batch_part = line.split('-')[0].strip()
-                    batches = smart_split_batches(batch_part)
+                    batches = split_batches(batch_part)
 
                     if batch_code in batches or (group_code and batch_part == group_code):
                         timetable[day].append((slot, line))
@@ -88,11 +90,11 @@ def generate_pdf(timetable, batch_code):
 
 # ---------- Streamlit UI ----------
 st.set_page_config(page_title="Timetable Extractor", layout="centered")
-st.title("📅 Personalized Timetable Extractor")
+st.title("Personalized Timetable Extractor")
 
 uploaded_file = st.file_uploader("Upload your master timetable (.docx)", type="docx")
 st.write("Please enter your batch code as B1 or B9 and not BX or BZ.")
-st.write("A1 batches are requested to enter as 2A1.")
+# st.write("A1 batches are requested to enter as 2A1.")
 batch_input = st.text_input("Enter your batch code (e.g., B4, B9, B13)")
 
 if uploaded_file and batch_input:
@@ -103,8 +105,11 @@ if uploaded_file and batch_input:
         for day, entries in timetable.items():
             st.markdown(f"### {day}")
             for slot, entry in entries:
-                st.write(f"{slot}: {entry if entry else 'No class'}")
+                if(slot=="1.00-1.55"):
+                    st.write(f"{slot}: {'Lunch'}")
+                else:
+                    st.write(f"{slot}: {entry if entry else 'No class'}")
 
         pdf_path = generate_pdf(timetable, batch_input.upper())
         with open(pdf_path, "rb") as f:
-            st.download_button("📥 Download Timetable PDF", f, file_name="personal_timetable.pdf")
+            st.download_button("📥 Download Timetable PDF", f, file_name=f"{batch_input.capitalize()} Timetable.pdf")
