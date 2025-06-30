@@ -185,7 +185,7 @@ with st.sidebar:
 if uploaded_file and batch_input:
     with st.spinner("Extracting your timetable..."):
         timetable = extract_timetable(uploaded_file, batch_input.upper())
-        st.success("✅ Timetable extracted!")
+        st.success("Timetable extracted!")
 
         for day, entries in timetable.items():
             st.markdown(f"### {day}")
