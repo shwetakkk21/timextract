@@ -91,6 +91,45 @@ def generate_pdf(timetable, batch_code):
     pdf.output(tmp_file.name)
     return tmp_file.name
 
+from datetime import datetime, timedelta
+
+DAY_TO_INDEX = {"Mon": 0, "Tue": 1, "Wed": 2, "Thu": 3, "Fri": 4, "Sat": 5}
+START_DATE = datetime(2025, 7, 21)  # e.g. first week of timetable
+
+def generate_ics(timetable):
+    tmp_file = tempfile.NamedTemporaryFile(delete=False, suffix=".ics")
+    with open(tmp_file.name, "w") as icsfile:
+        icsfile.write("BEGIN:VCALENDAR\nVERSION:2.0\nPRODID:-//My Timetable//EN\n")
+        for day, slots in timetable.items():
+            day_index = DAY_TO_INDEX[day]
+            event_date = START_DATE + timedelta(days=day_index)
+            for time_range, class_info in slots:
+                if class_info is None:
+                    continue
+                start_str, end_str = [t.replace('.', ':') for t in time_range.split('-')]
+                start_time = datetime.strptime(start_str, "%H:%M")
+                end_time = datetime.strptime(end_str, "%H:%M")
+
+                # adjust for PM slots
+                if 1 <= start_time.hour <= 4:
+                    start_time = start_time.replace(hour=start_time.hour + 12)
+                    end_time = end_time.replace(hour=end_time.hour + 12)
+
+                dtstart = event_date.replace(hour=start_time.hour, minute=start_time.minute)
+                dtend = event_date.replace(hour=end_time.hour, minute=end_time.minute)
+                dtstart_str = dtstart.strftime("%Y%m%dT%H%M%S")
+                dtend_str = dtend.strftime("%Y%m%dT%H%M%S")
+
+                icsfile.write("BEGIN:VEVENT\n")
+                icsfile.write(f"SUMMARY:{class_info}\n")
+                icsfile.write(f"DTSTART:{dtstart_str}\n")
+                icsfile.write(f"DTEND:{dtend_str}\n")
+                icsfile.write(f"RRULE:FREQ=WEEKLY;UNTIL=20251206T235959\n")
+                icsfile.write("END:VEVENT\n")
+        icsfile.write("END:VCALENDAR\n")
+    return tmp_file.name
+
+
 # ---------- Streamlit UI ----------
 st.set_page_config(page_title="Timextract", layout="centered")
 st.title("Personalized Timetable Extractor")
@@ -124,6 +163,10 @@ if uploaded_file and batch_input:
         pdf_path = generate_pdf(timetable, batch_input.upper())
         with open(pdf_path, "rb") as f:
             st.download_button("📥 Download Timetable PDF", f, file_name=f"{batch_input.capitalize()} Timetable.pdf")
+        ics_path = generate_ics(timetable)
+        with open(ics_path, "rb") as f:
+            st.download_button("📅 Download Timetable .ics", f, file_name=f"{batch_input.capitalize()} Timetable.ics")
+
 
 st.markdown("""
 <style>
