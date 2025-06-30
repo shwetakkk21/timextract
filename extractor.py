@@ -3,6 +3,7 @@ from docx import Document
 from fpdf import FPDF
 import tempfile
 import re
+from datetime import datetime,timedelta
 
 TIME_SLOTS = [
     "9.00-9.55", "10.00-10.55", "11.00-11.55", "12.00-12.55",
@@ -18,8 +19,6 @@ BATCH_GROUPS = {
 
 DAYS= ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]
 
-from datetime import datetime
-
 HOLIDAYS=[
     datetime(2025,7,21).date(),
     datetime(2025,8,9).date(),
@@ -27,6 +26,26 @@ HOLIDAYS=[
     datetime(2025,8,16).date(),
     datetime(2025,10,2).date(),
 ]
+
+midsem_start=datetime(2025,10,18).date()
+midsem_end=datetime(2025,10,25).date()
+
+t1_start=datetime(2025,9,1).date()
+t1_end=datetime(2025,9,6).date()
+
+t2_start=datetime(2025,10,13).date()
+t2_end=datetime(2025,10,17).date()
+
+def add_holidays(HOLIDAYS,start_date,end_date):
+    delta= timedelta(days=1)
+    current=start_date
+    while current <= end_date:
+        HOLIDAYS.append(current)
+        current += delta
+
+add_holidays(HOLIDAYS, midsem_start, midsem_end)
+add_holidays(HOLIDAYS, t1_start, t1_end)
+add_holidays(HOLIDAYS, t2_start, t2_end)
 
 def get_group_for_batch(batch_code):
     for group, members in BATCH_GROUPS.items():
@@ -101,10 +120,8 @@ def generate_pdf(timetable, batch_code):
     pdf.output(tmp_file.name)
     return tmp_file.name
 
-from datetime import datetime, timedelta
-
 DAY_TO_INDEX = {"Mon": 0, "Tue": 1, "Wed": 2, "Thu": 3, "Fri": 4, "Sat": 5}
-START_DATE = datetime(2025, 7, 21)  # e.g. first week of timetable
+START_DATE = datetime(2025, 7, 21)  #first day of the semester
 
 def generate_ics(timetable):
     tmp_file = tempfile.NamedTemporaryFile(delete=False, suffix=".ics")
@@ -134,7 +151,7 @@ def generate_ics(timetable):
                 icsfile.write(f"SUMMARY:{class_info}\n")
                 icsfile.write(f"DTSTART:{dtstart_str}\n")
                 icsfile.write(f"DTEND:{dtend_str}\n")
-                icsfile.write(f"RRULE:FREQ=WEEKLY;UNTIL=20251206T235959\n")
+                icsfile.write(f"RRULE:FREQ=WEEKLY;UNTIL=20251122T235959\n")
 
                 for holiday in HOLIDAYS:
                     if holiday.weekday() == dtstart.weekday():
@@ -182,6 +199,7 @@ if uploaded_file and batch_input:
         ics_path = generate_ics(timetable)
         with open(ics_path, "rb") as f:
             st.download_button("📅 Download Timetable .ics", f, file_name=f"{batch_input.capitalize()} Timetable.ics")
+        st.write('Import downloaded .ics file to your Google Calendar or iCal')
 
 
 st.markdown("""
