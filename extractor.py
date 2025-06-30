@@ -19,6 +19,8 @@ BATCH_GROUPS = {
 
 DAYS= ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]
 
+# modify holiday, break and test days here
+
 HOLIDAYS=[
     datetime(2025,7,21).date(),
     datetime(2025,8,9).date(),
