@@ -197,10 +197,10 @@ if uploaded_file and batch_input:
 
         pdf_path = generate_pdf(timetable, batch_input.upper())
         with open(pdf_path, "rb") as f:
-            st.download_button("📥 Download Timetable PDF", f, file_name=f"{batch_input.capitalize()} Timetable.pdf")
+            st.download_button("Download Timetable PDF", f, file_name=f"{batch_input.capitalize()} Timetable.pdf")
         ics_path = generate_ics(timetable)
         with open(ics_path, "rb") as f:
-            st.download_button("📅 Download Timetable .ics", f, file_name=f"{batch_input.capitalize()} Timetable.ics")
+            st.download_button("Download Timetable .ics", f, file_name=f"{batch_input.capitalize()} Timetable.ics")
         st.write('Import downloaded .ics file to your Google Calendar or iCal')
 
 
