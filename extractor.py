@@ -18,6 +18,16 @@ BATCH_GROUPS = {
 
 DAYS= ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]
 
+from datetime import datetime
+
+HOLIDAYS=[
+    datetime(2025,7,21).date(),
+    datetime(2025,8,9).date(),
+    datetime(2025,8,15).date(),
+    datetime(2025,8,16).date(),
+    datetime(2025,10,2).date(),
+]
+
 def get_group_for_batch(batch_code):
     for group, members in BATCH_GROUPS.items():
         if batch_code in members:
@@ -125,6 +135,12 @@ def generate_ics(timetable):
                 icsfile.write(f"DTSTART:{dtstart_str}\n")
                 icsfile.write(f"DTEND:{dtend_str}\n")
                 icsfile.write(f"RRULE:FREQ=WEEKLY;UNTIL=20251206T235959\n")
+
+                for holiday in HOLIDAYS:
+                    if holiday.weekday() == dtstart.weekday():
+                        ex_dt=datetime.combine(holiday, dtstart.time())
+                        ex_str=ex_dt.strftime("%Y%m%dT%H%M%S")
+                        icsfile.write(f"EXDATE:{ex_str}\n")
                 icsfile.write("END:VEVENT\n")
         icsfile.write("END:VCALENDAR\n")
     return tmp_file.name
