@@ -167,7 +167,7 @@ def generate_ics(timetable):
 st.set_page_config(page_title="Timextract", layout="centered")
 st.title("Personalized Timetable Extractor")
 
-uploaded_file = st.file_uploader("Upload your master timetable (.docx)", type="docx")
+uploaded_file = st.file_uploader("Upload your official master timetable (.docx)", type="docx")
 st.write("Please enter your batch code as B1 or B9 and not BX or BZ.")
 # st.write("A1 batch is requested to enter as 2A1.")
 batch_input = st.text_input("Enter your batch code (e.g., B4, B9, B13)")
@@ -199,7 +199,7 @@ if uploaded_file and batch_input:
         ics_path = generate_ics(timetable)
         with open(ics_path, "rb") as f:
             st.download_button("Download Timetable .ics", f, file_name=f"{batch_input.capitalize()} Timetable.ics")
-        st.write('Import downloaded .ics file to your Google Calendar or iCal')
+        st.write('Import downloaded .ics file to your Google Calendar or iCal (Web only).')
 
 
 st.markdown("""
