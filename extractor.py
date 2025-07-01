@@ -23,12 +23,14 @@ def load_batch_groups(path='batch_groups.json'):
     
 BATCH_GROUPS = load_batch_groups()
 
-def load_holidays(path="holidays.json"):
+def load_dates(path="dates.json"):
     try:
-        holidays=set()
         with open(path,"r") as f:
             data=json.load(f)
+        semester_start = datetime.strptime(data["semester_start"], "%Y-%m-%d").date()
+        semester_end = datetime.strptime(data["semester_end"], "%Y-%m-%d").date()
         #single days
+        holidays=set()
         for date_str in data.get("single_days",[]):
             holidays.add(datetime.strptime(date_str,"%Y-%m-%d").date())
         #ranges
@@ -38,12 +40,12 @@ def load_holidays(path="holidays.json"):
             while(start<=end):
                 holidays.add(start)
                 start+=timedelta(days=1)
-        return holidays
+        return semester_start, semester_end, holidays
     except FileNotFoundError:
         st.error("Holidays file not found. Please ensure the file exists.")
-        return set()
+        return None, None, set()
 
-HOLIDAYS=load_holidays()
+SEMESTER_START, SEMESTER_END, HOLIDAYS = load_dates()
 #print(HOLIDAYS)
 
 def get_group_for_batch(batch_code):
@@ -120,7 +122,9 @@ def generate_pdf(timetable, batch_code):
     return tmp_file.name
 
 DAY_TO_INDEX = {"Mon": 0, "Tue": 1, "Wed": 2, "Thu": 3, "Fri": 4, "Sat": 5}
-START_DATE = datetime(2025, 7, 21)  #first day of the semester
+
+START_DATE = datetime.combine(SEMESTER_START, datetime.min.time())
+until_str= SEMESTER_END.strftime("%Y%m%dT235959")
 
 def generate_ics(timetable):
     tmp_file = tempfile.NamedTemporaryFile(delete=False, suffix=".ics")
@@ -150,7 +154,7 @@ def generate_ics(timetable):
                 icsfile.write(f"SUMMARY:{class_info}\n")
                 icsfile.write(f"DTSTART:{dtstart_str}\n")
                 icsfile.write(f"DTEND:{dtend_str}\n")
-                icsfile.write(f"RRULE:FREQ=WEEKLY;UNTIL=20251122T235959\n")
+                icsfile.write(f"RRULE:FREQ=WEEKLY;UNTIL={until_str}\n")
 
                 for holiday in HOLIDAYS:
                     if holiday.weekday() == dtstart.weekday():
