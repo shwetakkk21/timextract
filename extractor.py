@@ -4,20 +4,24 @@ from fpdf import FPDF
 import tempfile
 import re
 from datetime import datetime,timedelta
+import json
 
 TIME_SLOTS = [
     "9.00-9.55", "10.00-10.55", "11.00-11.55", "12.00-12.55",
     "1.00-1.55", "2.00-2.55", "3.00-3.55", "4.00-4.55"
 ]
 
-BATCH_GROUPS = {
-    "BX": ["B1", "B2", "B3", "B4"],
-    "BY": ["B5", "B6", "B7", "B8"],
-    "BZ": ["B9", "B10", "B11", "B12"],
-    "BX1": ["B13", "B14", "A1"]
-}
-
 DAYS= ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]
+
+def load_batch_groups(path='batch_groups.json'):
+    try:
+        with open(path, 'r') as f:
+            return json.load(f)
+    except FileNotFoundError:
+        st.error("Batch groups file not found. Please ensure the file exists.")
+        return {}
+    
+BATCH_GROUPS = load_batch_groups()
 
 # modify holiday, break and test days here
 
