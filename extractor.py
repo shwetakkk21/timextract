@@ -23,35 +23,24 @@ def load_batch_groups(path='batch_groups.json'):
     
 BATCH_GROUPS = load_batch_groups()
 
-# modify holiday, break and test days here
+def load_holidays(path="holidays.json"):
+    holidays=set()
+    with open(path,"r") as f:
+        data=json.load(f)
+    #single days
+    for date_str in data.get("single_days",[]):
+        holidays.add(datetime.strptime(date_str,"%Y-%m-%d").date())
+    #ranges
+    for rng in data.get("ranges",[]):
+        start=datetime.strptime(rng["start"],"%Y-%m-%d").date()
+        end=datetime.strptime(rng["end"],"%Y-%m-%d").date()
+        while(start<=end):
+            holidays.add(start)
+            start+=timedelta(days=1)
+    return holidays
 
-HOLIDAYS=[
-    datetime(2025,7,21).date(),
-    datetime(2025,8,9).date(),
-    datetime(2025,8,15).date(),
-    datetime(2025,8,16).date(),
-    datetime(2025,10,2).date(),
-]
-
-midsem_start=datetime(2025,10,18).date()
-midsem_end=datetime(2025,10,25).date()
-
-t1_start=datetime(2025,9,1).date()
-t1_end=datetime(2025,9,6).date()
-
-t2_start=datetime(2025,10,13).date()
-t2_end=datetime(2025,10,17).date()
-
-def add_holidays(HOLIDAYS,start_date,end_date):
-    delta= timedelta(days=1)
-    current=start_date
-    while current <= end_date:
-        HOLIDAYS.append(current)
-        current += delta
-
-add_holidays(HOLIDAYS, midsem_start, midsem_end)
-add_holidays(HOLIDAYS, t1_start, t1_end)
-add_holidays(HOLIDAYS, t2_start, t2_end)
+HOLIDAYS=load_holidays()
+#print(HOLIDAYS)
 
 def get_group_for_batch(batch_code):
     for group, members in BATCH_GROUPS.items():
@@ -163,6 +152,7 @@ def generate_ics(timetable):
                     if holiday.weekday() == dtstart.weekday():
                         ex_dt=datetime.combine(holiday, dtstart.time())
                         ex_str=ex_dt.strftime("%Y%m%dT%H%M%S")
+                        # print(f"Adding EXDATE for {class_info} on {ex_dt} because {holiday} matches weekday {dtstart.strftime('%A')}")
                         icsfile.write(f"EXDATE:{ex_str}\n")
                 icsfile.write("END:VEVENT\n")
         icsfile.write("END:VCALENDAR\n")
