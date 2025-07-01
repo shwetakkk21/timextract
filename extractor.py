@@ -42,7 +42,7 @@ def load_dates(path="dates.json"):
                 start+=timedelta(days=1)
         return semester_start, semester_end, holidays
     except FileNotFoundError:
-        st.error("Holidays file not found. Please ensure the file exists.")
+        st.error("Dates file not found. Please ensure the file exists.")
         return None, None, set()
 
 SEMESTER_START, SEMESTER_END, HOLIDAYS = load_dates()
