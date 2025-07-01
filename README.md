@@ -1,14 +1,15 @@
 # 🗓 Personalized Timetable Extractor
 
-A Python script that extracts and filters timetable entries from .docx files based on user-specified batch codes and outputs a clean, filtered version. Optionally exports the result as a PDF for easy sharing or printing.
+A Python script that extracts and filters timetable entries from .docx files based on user-specified batch codes and outputs a clean, filtered version. Optionally exports the result as a PDF for easy sharing or printing and a .ics file to import into Google Calnedar or iCal.
 
 ---
 
 ## Features
 
 - Parses .docx timetable documents
-- Filters based on batch codes (e.g., only show entries with b4, include bx exclusively if it starts the entry)
+- Filters based on batch codes
 - Exports filtered timetable to a formatted PDF
+- .ics file to import directly into your calendar
 - Simple to customize for your own batch or class group
 
 ---
@@ -52,6 +53,7 @@ streamlit run extractor.py
 
 - You can change the batch code or logic in the script
 - Update PDF formatting (fonts,layout) inside the FPDF section
+- Customize semester dates, holiday dates and event repetition rules
 
 ---
 
