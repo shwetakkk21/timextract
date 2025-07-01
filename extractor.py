@@ -24,20 +24,24 @@ def load_batch_groups(path='batch_groups.json'):
 BATCH_GROUPS = load_batch_groups()
 
 def load_holidays(path="holidays.json"):
-    holidays=set()
-    with open(path,"r") as f:
-        data=json.load(f)
-    #single days
-    for date_str in data.get("single_days",[]):
-        holidays.add(datetime.strptime(date_str,"%Y-%m-%d").date())
-    #ranges
-    for rng in data.get("ranges",[]):
-        start=datetime.strptime(rng["start"],"%Y-%m-%d").date()
-        end=datetime.strptime(rng["end"],"%Y-%m-%d").date()
-        while(start<=end):
-            holidays.add(start)
-            start+=timedelta(days=1)
-    return holidays
+    try:
+        holidays=set()
+        with open(path,"r") as f:
+            data=json.load(f)
+        #single days
+        for date_str in data.get("single_days",[]):
+            holidays.add(datetime.strptime(date_str,"%Y-%m-%d").date())
+        #ranges
+        for rng in data.get("ranges",[]):
+            start=datetime.strptime(rng["start"],"%Y-%m-%d").date()
+            end=datetime.strptime(rng["end"],"%Y-%m-%d").date()
+            while(start<=end):
+                holidays.add(start)
+                start+=timedelta(days=1)
+        return holidays
+    except FileNotFoundError:
+        st.error("Holidays file not found. Please ensure the file exists.")
+        return set()
 
 HOLIDAYS=load_holidays()
 #print(HOLIDAYS)
