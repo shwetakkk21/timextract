@@ -11,13 +11,18 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
+REPO_NAME=os.getenv("REPO")
 GITHUB_TOKEN=os.getenv("GITHUB_TOKEN")
+
+if not REPO_NAME or not GITHUB_TOKEN:
+    raise Exception("Environment not configured properly")
+
 HEADERS={
     "Authorization": f"token {GITHUB_TOKEN}",
     "Accept": f"application/vnd.github.v3.raw"
 }
 
-def load_json_from_github(path,repo="shwetakkk21/timetable-data"):
+def load_json_from_github(path,repo=REPO_NAME):
     url=f"https://api.github.com/repos/{repo}/contents/{path}"
     r=requests.get(url,headers=HEADERS)
     if r.status_code!=200:
