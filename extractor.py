@@ -5,6 +5,24 @@ import tempfile
 import re
 from datetime import datetime,timedelta
 import json
+import os
+import requests
+from dotenv import load_dotenv
+
+load_dotenv()
+
+GITHUB_TOKEN=os.getenv("GITHUB_TOKEN")
+HEADERS={
+    "Authorization": f"token {GITHUB_TOKEN}",
+    "Accept": f"application/vnd.github.v3.raw"
+}
+
+def load_json_from_github(path,repo="shwetakkk21/timetable-data"):
+    url=f"https://api.github.com/repos/{repo}/contents/{path}"
+    r=requests.get(url,headers=HEADERS)
+    if r.status_code!=200:
+        raise Exception(f"Github API failed: {r.status_code} - {r.text}")
+    return json.loads(r.text)
 
 TIME_SLOTS = [
     "9.00-9.55", "10.00-10.55", "11.00-11.55", "12.00-12.55",
@@ -14,36 +32,26 @@ TIME_SLOTS = [
 DAYS= ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]
 
 def load_batch_groups(path='batch_groups.json'):
-    try:
-        with open(path, 'r') as f:
-            return json.load(f)
-    except FileNotFoundError:
-        st.error("Batch groups file not found. Please ensure the file exists.")
-        return {}
+    return load_json_from_github(path)
     
 BATCH_GROUPS = load_batch_groups()
 
 def load_dates(path="dates.json"):
-    try:
-        with open(path,"r") as f:
-            data=json.load(f)
-        semester_start = datetime.strptime(data["semester_start"], "%Y-%m-%d").date()
-        semester_end = datetime.strptime(data["semester_end"], "%Y-%m-%d").date()
-        #single days
-        holidays=set()
-        for date_str in data.get("single_days",[]):
-            holidays.add(datetime.strptime(date_str,"%Y-%m-%d").date())
-        #ranges
-        for rng in data.get("ranges",[]):
-            start=datetime.strptime(rng["start"],"%Y-%m-%d").date()
-            end=datetime.strptime(rng["end"],"%Y-%m-%d").date()
-            while(start<=end):
-                holidays.add(start)
-                start+=timedelta(days=1)
-        return semester_start, semester_end, holidays
-    except FileNotFoundError:
-        st.error("Dates file not found. Please ensure the file exists.")
-        return None, None, set()
+    data=load_json_from_github(path)
+    semester_start = datetime.strptime(data["semester_start"], "%Y-%m-%d").date()
+    semester_end = datetime.strptime(data["semester_end"], "%Y-%m-%d").date()
+    #single days
+    holidays=set()
+    for date_str in data.get("single_days",[]):
+        holidays.add(datetime.strptime(date_str,"%Y-%m-%d").date())
+    #ranges
+    for rng in data.get("ranges",[]):
+        start=datetime.strptime(rng["start"],"%Y-%m-%d").date()
+        end=datetime.strptime(rng["end"],"%Y-%m-%d").date()
+        while(start<=end):
+            holidays.add(start)
+            start+=timedelta(days=1)
+    return semester_start, semester_end, holidays
 
 SEMESTER_START, SEMESTER_END, HOLIDAYS = load_dates()
 #print(HOLIDAYS)
