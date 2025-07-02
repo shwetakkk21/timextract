@@ -5,17 +5,13 @@ import tempfile
 import re
 from datetime import datetime,timedelta
 import json
-import os
 import requests
 from dotenv import load_dotenv
 
 load_dotenv()
 
 def get_req(key):
-    try:
-        return st.secrets[key]
-    except:
-        return os.getenv(key)
+    return st.secrets[key]
 
 GITHUB_TOKEN=get_req("GITHUB_TOKEN")
 REPO_NAME=get_req("REPO")
