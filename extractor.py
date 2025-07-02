@@ -11,8 +11,14 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-REPO_NAME=os.getenv("REPO")
-GITHUB_TOKEN=os.getenv("GITHUB_TOKEN")
+def get_req(key):
+    try:
+        return st.secrets[key]
+    except:
+        return os.getenv(key)
+
+GITHUB_TOKEN=get_req("GITHUB_TOKEN")
+REPO_NAME=get_req("REPO")
 
 if not REPO_NAME or not GITHUB_TOKEN:
     raise Exception("Environment not configured properly")
