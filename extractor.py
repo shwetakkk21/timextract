@@ -6,9 +6,6 @@ import re
 from datetime import datetime,timedelta
 import json
 import requests
-from dotenv import load_dotenv
-
-load_dotenv()
 
 def get_req(key):
     return st.secrets[key]
