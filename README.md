@@ -42,12 +42,12 @@ cd timetable-extractor
 ### 2. Install Dependencies
 
 ```bash
-pip install streamlit python-docx fpdf
+pip install streamlit python-docx fpdf requests
 ```
 ### 3. Run the Script
 
 ```bash
-streamlit run extractor.py
+streamlit run ui.py
 ```
 
 ---
