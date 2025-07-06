@@ -16,7 +16,25 @@ A Python script that extracts and filters timetable entries from .docx files bas
 
 ## Demo
 
-
+<table>
+  <tr>
+    <td align="center">
+      <a href="https://github.com/user-attachments/assets/09307714-872f-4d8b-bf04-8af277bccab2">
+        <img src="https://github.com/user-attachments/assets/09307714-872f-4d8b-bf04-8af277bccab2" width="300"/>
+      </a>
+    </td>
+    <td align="center">
+      <a href="https://github.com/user-attachments/assets/f811c543-970d-419b-8d20-ee463e6a2144">
+        <img src="https://github.com/user-attachments/assets/f811c543-970d-419b-8d20-ee463e6a2144" width="300"/>
+      </a>
+    </td>
+    <td align="center">
+      <a href="https://github.com/user-attachments/assets/7d2701a2-7db0-454b-8b8f-181fd3eb9653">
+        <img src="https://github.com/user-attachments/assets/7d2701a2-7db0-454b-8b8f-181fd3eb9653" width="300"/>
+      </a>
+    </td>
+  </tr>
+</table>
 
 ---
 
