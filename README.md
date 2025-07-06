@@ -22,10 +22,12 @@ A Python script that extracts and filters timetable entries from .docx files bas
 
 ## Tech Stack
 
-- Python 3.x
-- python-docx
-- fpdf
-- streamlit
+-Python 3.x – Programming language
+-streamlit[https://pypi.org/project/streamlit/] – For building the web application interface
+-python-docx – For parsing and processing .docx timetable files
+-fpdf – For generating formatted PDF files
+-requests – For making HTTP requests to GitHub API and loading remote JSON
+-json, datetime, re, tempfile – Python standard libraries for data handling, date calculations, regex, and temporary file creation
 
 ---
 
