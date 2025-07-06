@@ -23,8 +23,9 @@ A Python script that extracts and filters timetable entries from .docx files bas
 ## Tech Stack
 
 - Python 3.x
-- [python-docx](https://pypi.org/project/python-docx/)
-- [fpdf](https://pypi.org/project/fpdf/)
+- python-docx
+- fpdf
+- streamlit
 
 ---
 
