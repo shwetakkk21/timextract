@@ -7,7 +7,7 @@ from datetime import datetime, timedelta
 import json
 import os
 
-DATA_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "timeyy")
+DATA_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)))
 
 def load_json_from_folder(filename, data_dir=DATA_DIR):
     path = os.path.join(data_dir, filename)
