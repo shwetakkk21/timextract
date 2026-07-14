@@ -1,5 +1,5 @@
 import streamlit as st
-from docx import Document
+import pdfplumber
 from fpdf import FPDF
 import tempfile
 import re
@@ -76,39 +76,116 @@ def split_batches(batch_str):
     #else, split by capital letter + number pattern (e.g., B7B8 -> [B7,B8])
     return re.findall(r'[A-Z]\d+', batch_str)
 
-def extract_timetable(docx_file, batch_code):
-    doc = Document(docx_file)
+def _find_day_row_bounds(page, table):
+    """
+    In this timetable format the day name (Mon/Tue/...) sits in a cell that's
+    merged/spans the entire day's block of rows, so its text only shows up on
+    whichever physical row happens to be near the vertical center of that
+    merge -- it is NOT reliably the first row of the day's block.
+
+    Instead we find the actual merged rectangle behind the day-name column
+    (it's taller than a normal single-slot row) and use its exact top/bottom
+    to figure out which physical grid rows belong to which day.
+
+    Returns a list of (day, top, bottom) tuples in top-to-bottom order, or
+    None if this table doesn't look like the weekly day/time grid (e.g. a
+    legend/faculty table elsewhere in the PDF).
+    """
+    rows = table.rows
+    # find a full-width data row to read off the (narrow) day-label column's x-range
+    sample_cell = next(
+        (r.cells[0] for r in rows
+         if r.cells and len(r.cells) >= len(TIME_SLOTS) + 2 and r.cells[0]
+         and (r.cells[0][2] - r.cells[0][0]) < 40),
+        None
+    )
+    if not sample_cell:
+        return None
+    dx0, _, dx1, _ = sample_cell
+    day_rects = sorted(
+        (r for r in page.rects
+         if abs(r['x0'] - dx0) < 2 and abs(r['x1'] - dx1) < 2 and r['height'] > 40),
+        key=lambda r: r['top']
+    )
+    if len(day_rects) != len(DAYS):
+        return None
+    return [(day, r['top'], r['bottom']) for day, r in zip(DAYS, day_rects)]
+
+
+# Maps physical table-column index -> index into TIME_SLOTS.
+# Column 0 is the day-name column; column 5 is an empty spacer column with
+# no real content in this timetable layout (between 12.00-12.55 and 1.00-1.55).
+_COLUMN_TO_SLOT = {1: 0, 2: 1, 3: 2, 4: 3, 6: 4, 7: 5, 8: 6, 9: 7}
+
+
+def extract_timetable(pdf_file, batch_code):
+    """
+    pdf_file: path or file-like object pointing to the timetable PDF.
+
+    The PDF's table has a variable number of physical rows per day (rows are
+    driven by real cell geometry, not a fixed 2-rows-per-day pattern like the
+    old docx version), and multi-line class entries can wrap across two
+    physical rows. Both are handled below.
+    """
     timetable = {day: [] for day in DAYS}
     group_code = get_group_for_batch(batch_code)
 
-    for table in doc.tables:
-        rows = table.rows
-        i = 0
-        while i < len(rows) - 1:
-            row1 = rows[i].cells
-            row2 = rows[i + 1].cells
-            day = row1[0].text.strip()[:3]
-            if day not in timetable:
-                i += 1
-                continue
-            for col in range(1, min(len(TIME_SLOTS) + 1, len(row1))):
-                slot = TIME_SLOTS[col - 1]
-                entry1 = row1[col].text.strip()
-                entry2 = row2[col].text.strip()
-                added = False
-                for line in entry1.split('\n') + entry2.split('\n'):
-                    if not line:
-                        continue
-                    batch_part = line.split('-')[0].strip()
-                    batches = split_batches(batch_part)
+    # collected[(day, slot)] = ordered list of distinct class-entry strings
+    collected = {}
 
-                    if batch_code in batches or (group_code and batch_part == group_code):
-                        timetable[day].append((slot, line))
-                        added = True
-                        break
-                if not added:
-                    timetable[day].append((slot, None))
-            i += 2
+    with pdfplumber.open(pdf_file) as pdf:
+        for page in pdf.pages:
+            for table in page.find_tables():
+                day_bounds = _find_day_row_bounds(page, table)
+                if day_bounds is None:
+                    continue  # not the weekly grid table, skip (e.g. legend page)
+
+                def find_day(mid_y):
+                    for day, top, bottom in day_bounds:
+                        if top - 1 <= mid_y <= bottom + 1:
+                            return day
+                    return None
+
+                for row in table.rows:
+                    if not row.cells or not row.bbox:
+                        continue
+                    mid_y = (row.bbox[1] + row.bbox[3]) / 2
+                    day = find_day(mid_y)
+                    if day is None:
+                        continue
+                    for col_idx, slot_idx in _COLUMN_TO_SLOT.items():
+                        if col_idx >= len(row.cells) or row.cells[col_idx] is None:
+                            continue
+                        text = (page.crop(row.cells[col_idx]).extract_text() or "").strip()
+                        if not text:
+                            continue
+                        key = (day, TIME_SLOTS[slot_idx])
+                        collected.setdefault(key, [])
+                        for line in text.split('\n'):
+                            # collapse spurious kerning-induced spaces (real
+                            # entries never contain intentional spaces)
+                            line = re.sub(r'\s+', '', line.strip())
+                            if not line:
+                                continue
+                            # an entry ending in '-' means it wrapped onto the
+                            # next physical row -- stitch it back together
+                            if collected[key] and collected[key][-1].endswith('-'):
+                                collected[key][-1] += line
+                            elif line not in collected[key]:
+                                collected[key].append(line)
+
+    for day in DAYS:
+        for slot in TIME_SLOTS:
+            candidates = collected.get((day, slot), [])
+            match = None
+            for line in candidates:
+                batch_part = line.split('-')[0].strip()
+                batches = split_batches(batch_part)
+                if batch_code in batches or (group_code and batch_part == group_code):
+                    match = line
+                    break
+            timetable[day].append((slot, match))
+
     return timetable
 
 def generate_pdf(timetable, batch_code):
